@@ -1,6 +1,6 @@
 #include <Windows.h>
 #include <Winldap.h>
-#pragma comment(lib, "wldap32.lib")
+
 #include "base\helpers.h"
 
 const size_t newsize = 100;
@@ -13,6 +13,7 @@ const size_t newsize = 100;
  */
 #ifdef _DEBUG
 #include "base\mock.h"
+#pragma comment(lib, "wldap32.lib")
 #undef DECLSPEC_IMPORT
 #define DECLSPEC_IMPORT
 #endif
@@ -22,7 +23,7 @@ extern "C" {
 #include "beacon.h"
 
 
-    void go(char* args, int len) {
+    void go(char* args, int alen) {
         /**
          * Define the Dynamic Function Resolution declaration for the GetSystemDirectoryA function
          * This time we use the DFR_LOCAL macro which create a local function pointer variable that
@@ -69,9 +70,10 @@ extern "C" {
         if (pLdapConnection == NULL)
         {
             //  Set the HRESULT based on the Windows error code.
-            char hr = HRESULT_FROM_WIN32(GetLastError());
+            DWORD hr = GetLastError();
             BeaconPrintf(CALLBACK_ERROR, "ldap_init failed with 0x%x.\n", hr);
-            goto error_exit;
+            ldap_unbind(pLdapConnection);
+            return;
         }
         else
             BeaconPrintf(CALLBACK_OUTPUT, "ldap_init succeeded \n");
@@ -85,7 +87,8 @@ extern "C" {
         else
         {
             BeaconPrintf(CALLBACK_ERROR, "SetOption Error:%0X\n", returnCode);
-            goto error_exit;
+            ldap_unbind(pLdapConnection);
+            return;
         }
 
         // Connect to the server.
@@ -96,7 +99,8 @@ extern "C" {
         else
         {
             BeaconPrintf(CALLBACK_ERROR, "ldap_connect failed with 0x%x.\n", connectSuccess);
-            goto error_exit;
+            ldap_unbind(pLdapConnection);
+            return;
         }
 
         //  Bind with current credentials (login credentials). Be
@@ -155,17 +159,14 @@ extern "C" {
 
         }
         else
-            goto error_exit;
+        {
+            ldap_unbind(pLdapConnection);
+            return;
+        }
 
         //  Normal cleanup and exit.
         ldap_unbind(pLdapConnection);
         return;
-
-        //  On error cleanup and exit.
-    error_exit:
-        ldap_unbind(pLdapConnection);
-        return;
-
 
     }
 }

@@ -1,4 +1,4 @@
-#include <windows.h>
+//#include <windows.h>
 
 WINBASEAPI int WINAPI USER32$MessageBoxA(HWND, LPCSTR, LPCSTR, UINT);
 #define	MessageBoxA USER32$MessageBoxA
@@ -34,9 +34,6 @@ DFR(WLDAP32, ldap_msgfree);
 DFR(WLDAP32, ldap_unbind);
 #define ldap_unbind WLDAP32$ldap_unbind
 
-/*            ldap_memfree(resultOID);
-            ber_bvfree(resultData);
-            ldap_msgfree(res);*/
 
 //WINLDAPAPI LDAP* __cdecl LDAPConnectW(LPCWSTR, ULONG);
 //WINLDAPAPI LDAP * __cdecl LDAPOpenW(LPCWSTR, ULONG);
